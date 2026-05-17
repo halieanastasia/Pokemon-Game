@@ -66,6 +66,10 @@ const MEDIUM = 6;
 const HARD = 9;
 let selectedDifficulty = EASY;
 
+const EASY_TIME = 60;
+const MEDIUM_TIME = 120;
+const HARD_TIME = 180;
+
 let totalClicks = 0;
 let totalMatched = 0;
 let totalUnmatched = EASY;
@@ -158,6 +162,7 @@ async function runGame(difficulty) {
   totalUnmatched = difficulty;
   totalPairs = difficulty;
   updateHeader();
+  hideResults();
 
   // Display cards
   await displayCards(difficulty);
@@ -209,6 +214,12 @@ async function runGame(difficulty) {
         // Clear the first card and unlock the board for the next turn
         firstCard = null;
         lockBoard = false;
+
+        // Win condition
+        if (totalMatched === totalPairs) {
+          lockBoard = true;
+          displayResult(true);
+        }
       } else {
         // Lock the board so no more cards can be clicked during the delay
         lockBoard = true;
@@ -224,6 +235,30 @@ async function runGame(difficulty) {
       }
     });
   });
+}
+
+function createResult() {
+  const resultDiv = document.getElementById("result");
+  let resultText = document.createElement("h2");
+  resultText.setAttribute("id", "result_text");
+  resultText.setAttribute("style", "display: none");
+
+  resultDiv.appendChild(resultText);
+}
+
+function displayResult(result) {
+  const resultText = document.getElementById("result_text");
+  if (result) {
+    resultText.innerHTML = "WIN!";
+  } else {
+    resultText.innerHTML = "LOSE!";
+  }
+  resultText.setAttribute("style", "display: block");
+}
+
+function hideResults() {
+  const resultText = document.getElementById("result_text");
+  resultText.setAttribute("style", "display: none");
 }
 
 function createDifficultyButtons() {
@@ -296,6 +331,7 @@ function initializeGame() {
   createHeader();
   createDifficultyButtons();
   setup();
+  createResult();
 }
 
 $(document).ready(initializeGame);

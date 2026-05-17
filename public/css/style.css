@@ -69,3 +69,12 @@ fieldset {
 .active {
   border: 2px solid black;
 }
+
+#result {
+  display: flex;
+  justify-content: center;
+}
+
+#result_text {
+  color: red;
+}
