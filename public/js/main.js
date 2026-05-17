@@ -20,7 +20,7 @@ Add different themes: dark/light
 Add power up feature: up to me example: allow users to see cards for short time
 */
 
-var isLoading = false;
+let isLoading = false;
 
 async function loadPokemon(mode = 3) {
   const randomIds = [];
@@ -61,19 +61,17 @@ function shuffleArray(arr) {
   return arr;
 }
 
-const pokemon = loadPokemon();
-console.log(pokemon);
-
 const EASY = 3;
 const MEDIUM = 6;
 const HARD = 9;
+let selectedDifficulty = EASY;
 
 let totalClicks = 0;
 let totalMatched = 0;
 let totalUnmatched = EASY;
 let totalPairs = EASY;
 
-function displayHeader() {
+function createHeader() {
   const statsDiv = document.getElementById("stats");
 
   const totalClicksElement = document.createElement("h5");
@@ -114,6 +112,9 @@ function updateHeader() {
 
 async function displayCards(difficulty) {
   const gameGrid = document.getElementById("game_grid");
+  // Reset grid
+  gameGrid.innerHTML = "";
+
   const pokemon = await loadPokemon(difficulty);
 
   for (let i = 0; i < pokemon.length; i++) {
@@ -139,12 +140,11 @@ async function displayCards(difficulty) {
 }
 
 async function setup() {
-  displayHeader();
   await displayCards(EASY);
   runGame(EASY);
 }
 
-function runGame(difficulty) {
+async function runGame(difficulty) {
   // Tracks the first card (starting with no card selected)
   let firstCard = null;
 
@@ -152,10 +152,15 @@ function runGame(difficulty) {
   // Or for selecting more than 2 cards while the two are being compared
   let lockBoard = false;
 
+  // Reset Stats
   totalClicks = 0;
   totalMatched = 0;
   totalUnmatched = difficulty;
   totalPairs = difficulty;
+  updateHeader();
+
+  // Display cards
+  await displayCards(difficulty);
 
   // Selects every card element and attaches a click handler
   document.querySelectorAll(".card").forEach((card) => {
@@ -221,4 +226,76 @@ function runGame(difficulty) {
   });
 }
 
-$(document).ready(setup);
+function createDifficultyButtons() {
+  const difficultyDiv = document.getElementById("difficulty");
+
+  let easyButton = document.createElement("input");
+  easyButton.setAttribute("type", "button");
+  easyButton.setAttribute("id", "easy_button");
+  easyButton.setAttribute("class", "difficulty_buttons");
+  easyButton.setAttribute("value", "Easy");
+  easyButton.addEventListener("click", function () {
+    selectedDifficulty = EASY;
+    setActiveDifficulty(easyButton);
+  });
+  difficultyDiv.appendChild(easyButton);
+
+  let mediumButton = document.createElement("input");
+  mediumButton.setAttribute("type", "button");
+  mediumButton.setAttribute("id", "medium_button");
+  mediumButton.setAttribute("class", "difficulty_buttons");
+  mediumButton.setAttribute("value", "Medium");
+  mediumButton.addEventListener("click", function () {
+    selectedDifficulty = MEDIUM;
+    setActiveDifficulty(mediumButton);
+  });
+  difficultyDiv.appendChild(mediumButton);
+
+  let hardButton = document.createElement("input");
+  hardButton.setAttribute("type", "button");
+  hardButton.setAttribute("id", "hard_button");
+  hardButton.setAttribute("class", "difficulty_buttons");
+  hardButton.setAttribute("value", "Hard");
+  hardButton.addEventListener("click", function () {
+    selectedDifficulty = HARD;
+    setActiveDifficulty(hardButton);
+  });
+  difficultyDiv.appendChild(hardButton);
+
+  let startButton = document.createElement("input");
+  startButton.setAttribute("type", "button");
+  startButton.setAttribute("id", "start_button");
+  startButton.setAttribute("value", "Start");
+  startButton.addEventListener("click", function () {
+    runGame(selectedDifficulty);
+  });
+  difficultyDiv.appendChild(startButton);
+
+  let resetButton = document.createElement("input");
+  resetButton.setAttribute("type", "button");
+  resetButton.setAttribute("id", "reset_button");
+  resetButton.setAttribute("value", "Reset");
+  resetButton.addEventListener("click", function () {
+    runGame(selectedDifficulty);
+  });
+  difficultyDiv.appendChild(resetButton);
+
+  // Set active to easy button by default
+  setActiveDifficulty(easyButton);
+}
+
+function setActiveDifficulty(selectedButton) {
+  document.querySelectorAll(".difficulty_buttons").forEach((btn) => {
+    btn.classList.remove("active");
+  });
+
+  selectedButton.classList.add("active");
+}
+
+function initializeGame() {
+  createHeader();
+  createDifficultyButtons();
+  setup();
+}
+
+$(document).ready(initializeGame);
