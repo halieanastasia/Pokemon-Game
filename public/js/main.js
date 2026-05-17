@@ -108,31 +108,31 @@ function peek() {
 function createHeader() {
   const statsDiv = document.getElementById("stats");
 
-  const totalClicksElement = document.createElement("h5");
+  const totalClicksElement = document.createElement("p");
 
   totalClicksElement.setAttribute("id", "stat_clicks");
   totalClicksElement.setAttribute("class", "stat_element");
   statsDiv.appendChild(totalClicksElement);
 
-  const totalPairsElement = document.createElement("h5");
+  const totalPairsElement = document.createElement("p");
 
   totalPairsElement.setAttribute("id", "stat_pairs");
   totalPairsElement.setAttribute("class", "stat_element");
   statsDiv.appendChild(totalPairsElement);
 
-  const totalMatchedElement = document.createElement("h5");
+  const totalMatchedElement = document.createElement("p");
 
   totalMatchedElement.setAttribute("id", "stat_matched");
   totalMatchedElement.setAttribute("class", "stat_element");
   statsDiv.appendChild(totalMatchedElement);
 
-  const totalUnmatchedElement = document.createElement("h5");
+  const totalUnmatchedElement = document.createElement("p");
 
   totalUnmatchedElement.setAttribute("id", "stat_unmatched");
   totalUnmatchedElement.setAttribute("class", "stat_element");
   statsDiv.appendChild(totalUnmatchedElement);
 
-  const timerElement = document.createElement("h5");
+  const timerElement = document.createElement("p");
   timerElement.setAttribute("id", "stat_timer");
   timerElement.setAttribute("class", "stat_element");
   statsDiv.appendChild(timerElement);
@@ -320,9 +320,26 @@ function hideResults() {
   resultText.setAttribute("style", "display: none");
 }
 
-function createDifficultyButtons() {
-  const difficultyDiv = document.getElementById("difficulty");
+function createButtons() {
+  const buttonDiv = document.getElementById("buttons");
 
+  const difficultyGroup = document.createElement("div");
+  difficultyGroup.setAttribute("id", "difficulty_group");
+  buttonDiv.appendChild(difficultyGroup);
+
+  const controlsGroup = document.createElement("div");
+  controlsGroup.setAttribute("id", "controls_group");
+  buttonDiv.appendChild(controlsGroup);
+
+  const optionsGroup = document.createElement("div");
+  optionsGroup.setAttribute("id", "options_group");
+  buttonDiv.appendChild(optionsGroup);
+
+  createDifficultyGroup(difficultyGroup);
+  createControlsGroup(controlsGroup);
+}
+
+function createDifficultyGroup(difficultyGroup) {
   let easyButton = document.createElement("input");
   easyButton.setAttribute("type", "button");
   easyButton.setAttribute("id", "easy_button");
@@ -332,7 +349,7 @@ function createDifficultyButtons() {
     selectedDifficulty = EASY;
     setActiveDifficulty(easyButton);
   });
-  difficultyDiv.appendChild(easyButton);
+  difficultyGroup.appendChild(easyButton);
 
   let mediumButton = document.createElement("input");
   mediumButton.setAttribute("type", "button");
@@ -343,7 +360,7 @@ function createDifficultyButtons() {
     selectedDifficulty = MEDIUM;
     setActiveDifficulty(mediumButton);
   });
-  difficultyDiv.appendChild(mediumButton);
+  difficultyGroup.appendChild(mediumButton);
 
   let hardButton = document.createElement("input");
   hardButton.setAttribute("type", "button");
@@ -354,11 +371,12 @@ function createDifficultyButtons() {
     selectedDifficulty = HARD;
     setActiveDifficulty(hardButton);
   });
-  difficultyDiv.appendChild(hardButton);
+  difficultyGroup.appendChild(hardButton);
 
-  // Set active to easy button by default
   setActiveDifficulty(easyButton);
+}
 
+function createControlsGroup(controlsGroup) {
   let startButton = document.createElement("input");
   startButton.setAttribute("type", "button");
   startButton.setAttribute("id", "start_button");
@@ -366,7 +384,7 @@ function createDifficultyButtons() {
   startButton.addEventListener("click", function () {
     runGame(selectedDifficulty);
   });
-  difficultyDiv.appendChild(startButton);
+  controlsGroup.appendChild(startButton);
 
   let resetButton = document.createElement("input");
   resetButton.setAttribute("type", "button");
@@ -375,27 +393,28 @@ function createDifficultyButtons() {
   resetButton.addEventListener("click", function () {
     runGame(selectedDifficulty);
   });
-  difficultyDiv.appendChild(resetButton);
+  controlsGroup.appendChild(resetButton);
 
   let peekButton = document.createElement("input");
   peekButton.setAttribute("type", "button");
   peekButton.setAttribute("id", "peek_button");
   peekButton.setAttribute("value", "Peek");
   peekButton.addEventListener("click", peek);
-  difficultyDiv.appendChild(peekButton);
+  controlsGroup.appendChild(peekButton);
 
   let themeButton = document.createElement("input");
   themeButton.setAttribute("type", "button");
   themeButton.setAttribute("id", "theme_button");
-  themeButton.setAttribute("value", "Basic Mode");
+  themeButton.setAttribute("value", "Shiny Mode");
   themeButton.addEventListener("click", toggleTheme);
-  difficultyDiv.appendChild(themeButton);
+  controlsGroup.appendChild(themeButton);
 }
 
 function toggleTheme() {
   const themeButton = document.getElementById("theme_button");
   currentTheme = currentTheme === "basic" ? "shiny" : "basic";
   themeButton.value = currentTheme === "basic" ? "Shiny Mode" : "Basic Mode";
+  document.body.classList.toggle("shiny");
   runGame(selectedDifficulty);
 }
 
@@ -410,7 +429,7 @@ function setActiveDifficulty(selectedButton) {
 function initializeGame() {
   createHeader();
   updateHeader();
-  createDifficultyButtons();
+  createButtons();
   createResult();
   runGame(EASY);
 }
