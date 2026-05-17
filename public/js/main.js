@@ -20,8 +20,6 @@ Add different themes: dark/light
 Add power up feature: up to me example: allow users to see cards for short time
 */
 
-let isLoading = false;
-
 async function loadPokemon(mode = 3) {
   const randomIds = [];
   for (let i = 0; i < mode; i++) {
@@ -66,10 +64,11 @@ const MEDIUM = 6;
 const HARD = 9;
 let selectedDifficulty = EASY;
 
-const EASY_TIME = 3;
+const EASY_TIME = 60;
 const MEDIUM_TIME = 120;
 const HARD_TIME = 180;
 let timeRemaining = EASY_TIME;
+let timerInterval;
 let lockBoard = false;
 
 let totalClicks = 0;
@@ -122,12 +121,12 @@ function updateHeader() {
   document.getElementById("stat_timer").innerHTML = `Timer: ${timeRemaining}`;
 }
 
-let timerInterval;
-
 function startTimer() {
   if (selectedDifficulty === EASY) timeRemaining = EASY_TIME;
   else if (selectedDifficulty === MEDIUM) timeRemaining = MEDIUM_TIME;
   else timeRemaining = HARD_TIME;
+
+  clearInterval(timerInterval);
 
   timerInterval = setInterval(() => {
     timeRemaining--;
@@ -140,8 +139,6 @@ function startTimer() {
     }
   }, 1000);
 }
-
-function timer() {}
 
 async function displayCards(difficulty) {
   const gameGrid = document.getElementById("game_grid");
@@ -172,11 +169,6 @@ async function displayCards(difficulty) {
   }
 }
 
-async function setup() {
-  await displayCards(EASY);
-  runGame(EASY);
-}
-
 async function runGame(difficulty) {
   // Tracks the first card (starting with no card selected)
   let firstCard = null;
@@ -184,6 +176,9 @@ async function runGame(difficulty) {
   // Lock Board is used to prevent the user from re selecting the same card
   // Or for selecting more than 2 cards while the two are being compared
   lockBoard = false;
+
+  // Display cards
+  await displayCards(difficulty);
 
   // Reset Stats
   totalClicks = 0;
@@ -193,9 +188,6 @@ async function runGame(difficulty) {
   updateHeader();
   hideResults();
   startTimer();
-
-  // Display cards
-  await displayCards(difficulty);
 
   // Selects every card element and attaches a click handler
   document.querySelectorAll(".card").forEach((card) => {
@@ -249,6 +241,7 @@ async function runGame(difficulty) {
         if (totalMatched === totalPairs) {
           lockBoard = true;
           displayResult(true);
+          clearInterval(timerInterval);
         }
       } else {
         // Lock the board so no more cards can be clicked during the delay
@@ -361,8 +354,8 @@ function initializeGame() {
   createHeader();
   updateHeader();
   createDifficultyButtons();
-  setup();
   createResult();
+  runGame(EASY);
 }
 
 $(document).ready(initializeGame);
