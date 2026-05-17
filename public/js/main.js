@@ -41,11 +41,17 @@ async function loadPokemon(mode = 3) {
   for (let i = 0; i < pokemonList.length; i++) {
     result.push({
       name: pokemonList[i].name,
-      art_front: pokemonList[i].sprites.other["official-artwork"].front_shiny,
+      art_front_basic:
+        pokemonList[i].sprites.other["official-artwork"].front_default,
+      art_front_shiny:
+        pokemonList[i].sprites.other["official-artwork"].front_shiny,
     });
     result.push({
       name: pokemonList[i].name,
-      art_front: pokemonList[i].sprites.other["official-artwork"].front_shiny,
+      art_front_basic:
+        pokemonList[i].sprites.other["official-artwork"].front_default,
+      art_front_shiny:
+        pokemonList[i].sprites.other["official-artwork"].front_shiny,
     });
   }
   return shuffleArray(result);
@@ -75,6 +81,29 @@ let totalClicks = 0;
 let totalMatched = 0;
 let totalUnmatched = EASY;
 let totalPairs = EASY;
+
+let isPeeking = false;
+const PEEK_DURATION = 1000;
+
+let currentTheme = "basic";
+
+function peek() {
+  if (lockBoard || isPeeking) return;
+
+  isPeeking = true;
+  lockBoard = true;
+
+  const unmatched = document.querySelectorAll(".card:not(.flip)");
+
+  unmatched.forEach((card) => card.classList.add("flip"));
+
+  setTimeout(() => {
+    unmatched.forEach((card) => card.classList.remove("flip"));
+
+    isPeeking = false;
+    lockBoard = false;
+  }, PEEK_DURATION);
+}
 
 function createHeader() {
   const statsDiv = document.getElementById("stats");
@@ -152,15 +181,21 @@ async function displayCards(difficulty) {
     card.classList.add("card");
 
     const frontFace = document.createElement("img");
-    frontFace.setAttribute("src", pokemon[i].art_front);
     frontFace.setAttribute("alt", pokemon[i].name);
     frontFace.setAttribute("id", i);
     frontFace.classList.add("front_face");
 
     const backFace = document.createElement("img");
-    backFace.setAttribute("src", "./img/back.webp");
     backFace.setAttribute("alt", "");
     backFace.classList.add("back_face");
+
+    if (currentTheme === "shiny") {
+      frontFace.setAttribute("src", pokemon[i].art_front_shiny);
+      backFace.setAttribute("src", "./img/masterball.webp");
+    } else {
+      frontFace.setAttribute("src", pokemon[i].art_front_basic);
+      backFace.setAttribute("src", "./img/back.webp");
+    }
 
     card.appendChild(frontFace);
     card.appendChild(backFace);
@@ -181,6 +216,7 @@ async function runGame(difficulty) {
   await displayCards(difficulty);
 
   // Reset Stats
+  isPeeking = false;
   totalClicks = 0;
   totalMatched = 0;
   totalUnmatched = difficulty;
@@ -320,6 +356,9 @@ function createDifficultyButtons() {
   });
   difficultyDiv.appendChild(hardButton);
 
+  // Set active to easy button by default
+  setActiveDifficulty(easyButton);
+
   let startButton = document.createElement("input");
   startButton.setAttribute("type", "button");
   startButton.setAttribute("id", "start_button");
@@ -338,8 +377,26 @@ function createDifficultyButtons() {
   });
   difficultyDiv.appendChild(resetButton);
 
-  // Set active to easy button by default
-  setActiveDifficulty(easyButton);
+  let peekButton = document.createElement("input");
+  peekButton.setAttribute("type", "button");
+  peekButton.setAttribute("id", "peek_button");
+  peekButton.setAttribute("value", "Peek");
+  peekButton.addEventListener("click", peek);
+  difficultyDiv.appendChild(peekButton);
+
+  let themeButton = document.createElement("input");
+  themeButton.setAttribute("type", "button");
+  themeButton.setAttribute("id", "theme_button");
+  themeButton.setAttribute("value", "Basic Mode");
+  themeButton.addEventListener("click", toggleTheme);
+  difficultyDiv.appendChild(themeButton);
+}
+
+function toggleTheme() {
+  const themeButton = document.getElementById("theme_button");
+  currentTheme = currentTheme === "basic" ? "shiny" : "basic";
+  themeButton.value = currentTheme === "basic" ? "Shiny Mode" : "Basic Mode";
+  runGame(selectedDifficulty);
 }
 
 function setActiveDifficulty(selectedButton) {
