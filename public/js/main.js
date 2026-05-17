@@ -66,9 +66,11 @@ const MEDIUM = 6;
 const HARD = 9;
 let selectedDifficulty = EASY;
 
-const EASY_TIME = 60;
+const EASY_TIME = 3;
 const MEDIUM_TIME = 120;
 const HARD_TIME = 180;
+let timeRemaining = EASY_TIME;
+let lockBoard = false;
 
 let totalClicks = 0;
 let totalMatched = 0;
@@ -79,28 +81,33 @@ function createHeader() {
   const statsDiv = document.getElementById("stats");
 
   const totalClicksElement = document.createElement("h5");
-  totalClicksElement.innerHTML = `Total Clicks: ${totalClicks}`;
+
   totalClicksElement.setAttribute("id", "stat_clicks");
   totalClicksElement.setAttribute("class", "stat_element");
   statsDiv.appendChild(totalClicksElement);
 
   const totalPairsElement = document.createElement("h5");
-  totalPairsElement.innerHTML = `Total Pairs: ${totalPairs}`;
+
   totalPairsElement.setAttribute("id", "stat_pairs");
   totalPairsElement.setAttribute("class", "stat_element");
   statsDiv.appendChild(totalPairsElement);
 
   const totalMatchedElement = document.createElement("h5");
-  totalMatchedElement.innerHTML = `Matched: ${totalMatched}`;
+
   totalMatchedElement.setAttribute("id", "stat_matched");
   totalMatchedElement.setAttribute("class", "stat_element");
   statsDiv.appendChild(totalMatchedElement);
 
   const totalUnmatchedElement = document.createElement("h5");
-  totalUnmatchedElement.innerHTML = `Unmatched: ${totalUnmatched}`;
+
   totalUnmatchedElement.setAttribute("id", "stat_unmatched");
   totalUnmatchedElement.setAttribute("class", "stat_element");
   statsDiv.appendChild(totalUnmatchedElement);
+
+  const timerElement = document.createElement("h5");
+  timerElement.setAttribute("id", "stat_timer");
+  timerElement.setAttribute("class", "stat_element");
+  statsDiv.appendChild(timerElement);
 }
 
 function updateHeader() {
@@ -112,7 +119,29 @@ function updateHeader() {
     `Matched: ${totalMatched}`;
   document.getElementById("stat_unmatched").innerHTML =
     `Unmatched: ${totalUnmatched}`;
+  document.getElementById("stat_timer").innerHTML = `Timer: ${timeRemaining}`;
 }
+
+let timerInterval;
+
+function startTimer() {
+  if (selectedDifficulty === EASY) timeRemaining = EASY_TIME;
+  else if (selectedDifficulty === MEDIUM) timeRemaining = MEDIUM_TIME;
+  else timeRemaining = HARD_TIME;
+
+  timerInterval = setInterval(() => {
+    timeRemaining--;
+    updateHeader();
+
+    if (timeRemaining <= 0) {
+      clearInterval(timerInterval);
+      displayResult(false);
+      lockBoard = true;
+    }
+  }, 1000);
+}
+
+function timer() {}
 
 async function displayCards(difficulty) {
   const gameGrid = document.getElementById("game_grid");
@@ -154,7 +183,7 @@ async function runGame(difficulty) {
 
   // Lock Board is used to prevent the user from re selecting the same card
   // Or for selecting more than 2 cards while the two are being compared
-  let lockBoard = false;
+  lockBoard = false;
 
   // Reset Stats
   totalClicks = 0;
@@ -163,6 +192,7 @@ async function runGame(difficulty) {
   totalPairs = difficulty;
   updateHeader();
   hideResults();
+  startTimer();
 
   // Display cards
   await displayCards(difficulty);
@@ -329,6 +359,7 @@ function setActiveDifficulty(selectedButton) {
 
 function initializeGame() {
   createHeader();
+  updateHeader();
   createDifficultyButtons();
   setup();
   createResult();
